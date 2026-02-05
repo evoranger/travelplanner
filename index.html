@@ -67,17 +67,17 @@
             <button onclick="window.app.toggleSidebar()" class="text-muji-sub hover:text-muji-text p-2"><i class="fas fa-times text-lg"></i></button>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <button onclick="window.app.switchTab('plan')" class="nav-item w-full text-left px-4 py-3 rounded text-muji-text hover:bg-muji-bg transition flex items-center active">
-                <i class="fas fa-calendar-alt w-6 text-center mr-3 text-muji-sub"></i> PLAN <span class="text-xs text-muji-sub ml-auto">總覽</span>
+            <button onclick="window.app.switchTab('guide')" class="nav-item w-full text-left px-4 py-3 rounded text-muji-text hover:bg-muji-bg transition flex items-center active">
+                <i class="fas fa-map-signs w-6 text-center mr-3 text-muji-sub"></i> GUIDE
             </button>
-            <button onclick="window.app.switchTab('guide')" class="nav-item w-full text-left px-4 py-3 rounded text-muji-text hover:bg-muji-bg transition flex items-center">
-                <i class="fas fa-map-signs w-6 text-center mr-3 text-muji-sub"></i> GUIDE <span class="text-xs text-muji-sub ml-auto">行程導覽</span>
+            <button onclick="window.app.switchTab('plan')" class="nav-item w-full text-left px-4 py-3 rounded text-muji-text hover:bg-muji-bg transition flex items-center">
+                <i class="fas fa-plane w-6 text-center mr-3 text-muji-sub"></i> HOTEL / FLIGHT
             </button>
             <button onclick="window.app.switchTab('rate')" class="nav-item w-full text-left px-4 py-3 rounded text-muji-text hover:bg-muji-bg transition flex items-center">
-                <i class="fas fa-calculator w-6 text-center mr-3 text-muji-sub"></i> RATE <span class="text-xs text-muji-sub ml-auto">匯率</span>
+                <i class="fas fa-calculator w-6 text-center mr-3 text-muji-sub"></i> RATE
             </button>
             <button onclick="window.app.switchTab('lists')" class="nav-item w-full text-left px-4 py-3 rounded text-muji-text hover:bg-muji-bg transition flex items-center">
-                <i class="fas fa-list-ul w-6 text-center mr-3 text-muji-sub"></i> LISTS <span class="text-xs text-muji-sub ml-auto">清單</span>
+                <i class="fas fa-list-ul w-6 text-center mr-3 text-muji-sub"></i> TO-DO LIST
             </button>
         </nav>
         <div class="p-4 border-t border-muji-border text-xs text-center text-muji-sub">
@@ -105,7 +105,7 @@
     <main class="flex-1 overflow-y-auto no-scrollbar p-4 relative bg-muji-bg">
 
         <!-- ================= PLAN TAB (Overview) ================= -->
-        <div id="tab-plan" class="tab-content active">
+        <div id="tab-plan" class="tab-content">
             <div class="space-y-6">
                 <!-- Flight Info -->
                 <div class="bg-muji-card p-5 rounded-lg shadow-sm border border-muji-border">
@@ -130,7 +130,7 @@
         </div>
 
         <!-- ================= GUIDE TAB (Detailed & Itinerary) ================= -->
-        <div id="tab-guide" class="tab-content">
+        <div id="tab-guide" class="tab-content active">
             <div class="space-y-6">
                 
                 <!-- 1. Flight Info (Detailed) -->
@@ -259,16 +259,6 @@
             </div>
         </div>
 
-        <!-- ================= INFO TAB ================= -->
-        <div id="tab-info" class="tab-content">
-            <div class="space-y-4">
-                <div class="col-span-2 bg-muji-card p-5 rounded-lg shadow-sm border border-muji-border">
-                    <h3 class="text-sm font-bold text-muji-text mb-3">⚠️ 旅遊注意事項</h3>
-                    <ul class="text-sm text-muji-sub list-disc pl-5 space-y-2"><li>日本電壓 100V 雙平腳</li><li>垃圾請分類帶回飯店</li></ul>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <!-- Modals -->
@@ -391,10 +381,7 @@
                     <div class="w-1/2"><label class="block text-xs text-muji-sub mb-1">入住日期</label><input type="date" id="hotel-date-start" class="w-full bg-muji-bg p-2 rounded text-sm focus:outline-none"></div>
                     <div class="w-1/2"><label class="block text-xs text-muji-sub mb-1">退房日期</label><input type="date" id="hotel-date-end" class="w-full bg-muji-bg p-2 rounded text-sm focus:outline-none"></div>
                 </div>
-                <div class="flex gap-2">
-                    <input type="text" id="hotel-checkin" placeholder="IN 15:00 (時間)" class="w-1/2 bg-muji-bg p-2 rounded text-sm">
-                    <input type="text" id="hotel-checkout" placeholder="OUT 10:00 (時間)" class="w-1/2 bg-muji-bg p-2 rounded text-sm">
-                </div>
+                <div class="flex gap-2"><input type="text" id="hotel-checkin" placeholder="IN 15:00 (時間)" class="w-1/2 bg-muji-bg p-2 rounded text-sm"><input type="text" id="hotel-checkout" placeholder="OUT 10:00 (時間)" class="w-1/2 bg-muji-bg p-2 rounded text-sm"></div>
                 <div><label class="block text-xs text-muji-sub mb-1">電話</label><input type="text" id="hotel-phone" class="w-full bg-muji-bg p-2 rounded text-sm focus:outline-none"></div>
                 <div><label class="block text-xs text-muji-sub mb-1">備註 / 取消政策</label><textarea id="hotel-notes" rows="4" class="w-full bg-muji-bg p-2 rounded text-sm focus:outline-none border border-transparent focus:border-muji-sub" placeholder="貼上取消政策或其他資訊..."></textarea></div>
             </div>
@@ -548,18 +535,6 @@
         window.app.confirmSimpleInput = async () => {
             const text = document.getElementById('simple-input-value').value;
             const type = document.getElementById('simple-input-type').value;
-            if (type === 'link') {
-                const parts = text.split('|');
-                const name = parts[0].trim();
-                const url = parts.length > 1 ? parts[1].trim() : text.trim();
-                if (!name || !url) return;
-                 try {
-                    await addDoc(collection(db, "links"), { name, url, created: Date.now() });
-                    window.app.closeSimpleInput();
-                } catch(e) { window.app.showAlert("新增連結失敗: " + e.message); }
-                return;
-            }
-
             if (!text) { window.app.closeSimpleInput(); return; }
 
             try {
@@ -625,26 +600,6 @@
                     div.className = 'bg-yellow-50 p-3 rounded shadow-sm border border-yellow-100 relative group';
                     const processedText = (item.text || "").replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-500 underline break-all"><i class="fas fa-link text-xs mr-1"></i>連結</a>');
                     div.innerHTML = `<p class="text-sm text-gray-700 whitespace-pre-wrap pr-6">${processedText}</p><button onclick="window.app.deleteMemo('${item.id}')" class="absolute top-2 right-2 text-yellow-300 hover:text-yellow-600"><i class="fas fa-times"></i></button>`;
-                    container.appendChild(div);
-                });
-            });
-            // Links
-            onSnapshot(query(collection(db, "links"), orderBy("created", "asc")), (snap) => {
-                showSync();
-                const container = document.getElementById('quick-links-container');
-                if(!container) return;
-                container.innerHTML = '';
-                snap.forEach((docSnap) => {
-                    const item = { id: docSnap.id, ...docSnap.data() };
-                    const div = document.createElement('div');
-                    div.className = 'px-4 py-3 flex justify-between items-center group hover:bg-gray-50 transition';
-                    div.innerHTML = `
-                        <a href="${item.url}" target="_blank" class="flex-1 flex items-center text-sm text-muji-text">
-                            <span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mr-3 text-xs flex-none"><i class="fas fa-link"></i></span>
-                            <span class="font-bold truncate">${item.name}</span>
-                        </a>
-                        <button onclick="window.app.deleteLink('${item.id}')" class="text-gray-300 hover:text-red-400 p-2"><i class="fas fa-trash-alt"></i></button>
-                    `;
                     container.appendChild(div);
                 });
             });
@@ -1156,4 +1111,3 @@
     </script>
 </body>
 </html>
-
