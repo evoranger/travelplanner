@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -259,6 +259,16 @@
             </div>
         </div>
 
+        <!-- ================= INFO TAB ================= -->
+        <div id="tab-info" class="tab-content">
+            <div class="space-y-4">
+                <div class="col-span-2 bg-muji-card p-5 rounded-lg shadow-sm border border-muji-border">
+                    <h3 class="text-sm font-bold text-muji-text mb-3">⚠️ 旅遊注意事項</h3>
+                    <ul class="text-sm text-muji-sub list-disc pl-5 space-y-2"><li>日本電壓 100V 雙平腳</li><li>垃圾請分類帶回飯店</li></ul>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modals -->
@@ -372,8 +382,7 @@
     <div id="hotel-form-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-lg shadow-lg modal-enter overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-muji-bg px-4 py-3 border-b border-muji-border flex justify-between items-center flex-none">
-                <h3 class="font-bold text-muji-text" id="hotel-modal-title">編輯住宿</h3><button onclick="window.app.closeHotelModal()" class="text-muji-sub hover:text-black"><i class="fas fa-times"></i></button>
-            </div>
+                <h3 class="font-bold text-muji-text" id="hotel-modal-title">編輯住宿</h3><button onclick="window.app.closeHotelModal()" class="text-muji-sub hover:text-black"><i class="fas fa-times"></i></button></div>
             <div class="p-4 space-y-3 overflow-y-auto flex-1">
                 <input type="hidden" id="hotel-id">
                 <div><label class="block text-xs text-muji-sub mb-1">飯店名稱</label><input type="text" id="hotel-name" class="w-full bg-muji-bg p-2 rounded text-sm focus:outline-none"></div>
@@ -539,6 +548,18 @@
         window.app.confirmSimpleInput = async () => {
             const text = document.getElementById('simple-input-value').value;
             const type = document.getElementById('simple-input-type').value;
+            if (type === 'link') {
+                const parts = text.split('|');
+                const name = parts[0].trim();
+                const url = parts.length > 1 ? parts[1].trim() : text.trim();
+                if (!name || !url) return;
+                 try {
+                    await addDoc(collection(db, "links"), { name, url, created: Date.now() });
+                    window.app.closeSimpleInput();
+                } catch(e) { window.app.showAlert("新增連結失敗: " + e.message); }
+                return;
+            }
+
             if (!text) { window.app.closeSimpleInput(); return; }
 
             try {
@@ -567,6 +588,12 @@
         window.app.deleteMemo = (id) => {
             window.app.openConfirm("確定刪除此備忘？", async () => {
                 if(db) await deleteDoc(doc(db, "memos", id));
+            });
+        };
+        
+        window.app.deleteLink = (id) => {
+            window.app.openConfirm("確定刪除此連結？", async () => {
+                if(db) await deleteDoc(doc(db, "links", id));
             });
         };
 
@@ -598,6 +625,26 @@
                     div.className = 'bg-yellow-50 p-3 rounded shadow-sm border border-yellow-100 relative group';
                     const processedText = (item.text || "").replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-500 underline break-all"><i class="fas fa-link text-xs mr-1"></i>連結</a>');
                     div.innerHTML = `<p class="text-sm text-gray-700 whitespace-pre-wrap pr-6">${processedText}</p><button onclick="window.app.deleteMemo('${item.id}')" class="absolute top-2 right-2 text-yellow-300 hover:text-yellow-600"><i class="fas fa-times"></i></button>`;
+                    container.appendChild(div);
+                });
+            });
+            // Links
+            onSnapshot(query(collection(db, "links"), orderBy("created", "asc")), (snap) => {
+                showSync();
+                const container = document.getElementById('quick-links-container');
+                if(!container) return;
+                container.innerHTML = '';
+                snap.forEach((docSnap) => {
+                    const item = { id: docSnap.id, ...docSnap.data() };
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-3 flex justify-between items-center group hover:bg-gray-50 transition';
+                    div.innerHTML = `
+                        <a href="${item.url}" target="_blank" class="flex-1 flex items-center text-sm text-muji-text">
+                            <span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mr-3 text-xs flex-none"><i class="fas fa-link"></i></span>
+                            <span class="font-bold truncate">${item.name}</span>
+                        </a>
+                        <button onclick="window.app.deleteLink('${item.id}')" class="text-gray-300 hover:text-red-400 p-2"><i class="fas fa-trash-alt"></i></button>
+                    `;
                     container.appendChild(div);
                 });
             });
@@ -1015,7 +1062,8 @@
 
             let timeHtml = '';
             if(plan.time) {
-                timeHtml = `<div class="text-[10px] text-muji-sub mb-1 font-mono">${plan.time}</div>`;
+                // CHANGED: text-lg, font-bold, text-muji-text (was text-[10px] text-muji-sub)
+                timeHtml = `<div class="text-lg font-bold text-muji-text mb-1 font-mono">${plan.time}</div>`;
             }
 
             const div = document.createElement('div');
@@ -1051,10 +1099,11 @@
                     if (h.dateStart && h.dateEnd) {
                         const s = new Date(h.dateStart);
                         const e = new Date(h.dateEnd);
-                        dateDisplay = `<p class="text-xs text-muji-sub mb-1 font-bold">${s.getMonth()+1}/${s.getDate()} - ${e.getMonth()+1}/${e.getDate()}</p>`;
+                        // CHANGED: dd/mm format, text-sm, text-muji-accent (or text-muji-text, used accent for differentiation)
+                        dateDisplay = `<p class="text-sm text-muji-accent mb-1 font-bold">${s.getDate()}/${s.getMonth()+1} - ${e.getDate()}/${e.getMonth()+1}</p>`;
                     } else if (h.dateStart) {
                          const s = new Date(h.dateStart);
-                         dateDisplay = `<p class="text-xs text-muji-sub mb-1 font-bold">${s.getMonth()+1}/${s.getDate()} 起</p>`;
+                         dateDisplay = `<p class="text-sm text-muji-accent mb-1 font-bold">${s.getDate()}/${s.getMonth()+1} 起</p>`;
                     }
 
                     // Card HTML (Reusable)
